@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AuditaAI — Continuous Transaction Audit</title>
+<meta name="description" content="AuditaAI — autonomous transaction investigation and resolution for African enterprise finance. Zenith Bank Zecathon 6.0, Track 02.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AuditaAI — Zecathon 6.0 pitch deck
+   Direction: audit workbench on dark stock.
+   Deep navy ground, orange exceptions, blue structure,
+   heavy sans display, tabular mono figures.
+   ============================================================ */
+
+:root{
+  /* ---- dark register: navy ground, orange primary, blue secondary ---- */
+  --bg:       #0A1120;
+  --bg-2:     #101A2E;
+  --bg-3:     #18243C;
+  --line:     #26344E;
+  --line-2:   #3D5070;
+
+  --fg:       #FFFFFF;
+  --fg-1:     #EEF3FA;
+  --fg-2:     #C3CFE0;
+  --fg-3:     #8C9CB4;
+
+  --orange:   #FF8A3D;
+  --orange-2: #FFB37A;
+  --orange-bg:#2A1608;
+
+  --blue:     #58A6FF;
+  --blue-2:   #9CCBFF;
+  --blue-bg:  #0D2544;
+
+  --green:    #3DDC97;
+  --red:      #FF5F56;
+  --red-deep: #D9483F;
+  --amber:    #FFC24B;
+
+  --on-accent:#160B03;      /* text sitting on orange */
+  --on-blue:  #04121F;      /* text sitting on blue   */
+
+  /* legacy aliases — every older rule keeps resolving to the dark palette */
+  --paper:   var(--bg);     --paper-2: var(--bg-2);  --paper-3: var(--bg-3);
+  --ink:     var(--fg-1);   --ink-2:   var(--fg-2);  --ink-3:   var(--fg-3);
+  --rule:    var(--line);   --rule-2:  var(--line-2);
+
+  --sans:  'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  --serif: var(--sans);       /* serif retired: headings are sans ExtraBold now */
+
+  --s: 1;                     /* deck scale, set by JS for screen fit */
+}
+
+*{ box-sizing: border-box; margin:0; padding:0; }
+
+html{ background:#05080F; }
+
+body{
+  font-family: var(--sans);
+  font-weight: 500;
+  color: var(--fg-2);
+  background: #05080F;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  padding: 28px 0 64px;
+}
+
+/* ---------- toolbar (screen only) ---------- */
+.bar{
+  max-width: 1280px;
+  margin: 0 auto 26px;
+  padding: 0 4px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap;
+}
+.bar .brand{ display:flex; align-items:baseline; gap:10px; }
+.bar .mark{
+  font-family: var(--sans);
+  font-size: 21px; font-weight: 800; letter-spacing:-0.02em; color: var(--fg);
+}
+.bar .mark em{ font-style: normal; color: var(--orange); }
+.bar .sub{
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing:.14em;
+  text-transform: uppercase; color: var(--fg-3);
+}
+/* live readout of the auto-fit result, so the sizing is never a guess */
+.bar .fitout{
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing:.04em;
+  color: var(--fg-3); opacity:.72; max-width: 520px;
+}
+.bar .tools{ display:flex; align-items:center; gap:8px; }
+.btn{
+  font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing:.06em; text-transform: uppercase;
+  padding: 10px 16px; border:1px solid var(--line-2); background:var(--bg-2);
+  color: var(--fg-2); cursor:pointer; border-radius:0;
+  transition: background .14s ease, color .14s ease, border-color .14s ease;
+}
+.btn:hover{ background:var(--bg-3); color:var(--fg); border-color:var(--orange); }
+.btn.primary{ background:var(--orange); color:var(--on-accent); border-color:var(--orange); }
+.btn.primary:hover{ background:var(--orange-2); border-color:var(--orange-2); }
+
+/* ---------- deck + slide geometry ----------
+   1280 x 720 px on screen == 13.333in x 7.5in in print (96dpi).
+   The frame holds the scaled footprint so layout stays exact. */
+.deck{ display:flex; flex-direction:column; align-items:center; gap:26px; }
+
+.frame{
+  width: calc(1280px * var(--s));
+  height: calc(720px * var(--s));
+  flex: none;
+}
+
+.slide{
+  width: 1280px;
+  height: 720px;
+  flex: none;
+  transform: scale(var(--s));
+  transform-origin: top left;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  display: flex; flex-direction: column;
+  padding: 22px 34px 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---------- workpaper header ---------- */
+.s-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding-bottom: 7px;
+  border-bottom: 2px solid var(--line-2);
+  flex: none;
+}
+.s-section{
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--orange);
+}
+.s-ref{
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  letter-spacing: .12em; color: var(--fg-3);
+}
+
+/* ---------- body ---------- */
+.s-body{
+  flex:1; display:flex; flex-direction:column; padding-top: 9px; min-height: 0;
+  /* --k is the per-slide auto-fit multiplier. Every dimension inside the body —
+     type, padding, gap, rule weight — scales with it, so each slide is rendered
+     as large as its 720px frame allows without spilling a single line.
+     Written by fitSlides(); never hand-edited. */
+  zoom: var(--k, 1);
+}
+/* children never silently compress: overflow stays visible, and detectable */
+.s-body > *{ flex: none; }
+
+.s-title{
+  font-family: var(--sans);
+  font-size: 37px; font-weight: 800; line-height: 1.16;
+  letter-spacing: -0.025em; color: var(--fg);
+  max-width: 1080px;
+}
+.s-title.narrow{ max-width: 900px; }
+.s-lede{
+  font-size: 15.5px; font-weight: 600; line-height: 1.5; color: var(--fg-2);
+  margin-top: 9px; max-width: 900px;
+}
+
+/* ---------- footer ---------- */
+.s-foot{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding-top: 6px; border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing:.1em;
+  text-transform: uppercase; color: var(--fg-3);
+  flex: none;
+}
+
+/* ---------- shared bits ---------- */
+.num{ font-variant-numeric: tabular-nums; font-feature-settings:'tnum'; }
+.mono{ font-family: var(--mono); }
+.nowrap{ white-space: nowrap; }
+
+.panel{ background: var(--bg-2); border:1px solid var(--line); padding: 18px 20px; }
+.panel.tight{ padding: 14px 16px; }
+
+.kicker{
+  font-family: var(--mono); font-size: 11.5px; font-weight: 700;
+  letter-spacing:.16em; text-transform: uppercase; color: var(--fg-3);
+  display:block; margin-bottom: 8px;
+}
+.kicker.red{ color: var(--orange); }
+.kicker.green{ color: var(--green); }
+
+.src{
+  font-family: var(--mono); font-size: 11.5px; font-weight: 500; line-height:1.5;
+  color: var(--fg-3); letter-spacing:.01em;
+}
+
+/* ---------- ruled tables ---------- */
+table{ width:100%; border-collapse: collapse; }
+th{
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing:.12em; text-transform: uppercase; color: var(--blue);
+  text-align: left; padding: 0 14px 8px 0;
+  border-bottom: 2px solid var(--line-2);
+  vertical-align: bottom;
+}
+td{
+  font-size: 14px; font-weight: 500; line-height: 1.45; color: var(--fg-2);
+  padding: 8px 14px 8px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+tr:last-child td{ border-bottom: none; }
+th:last-child, td:last-child{ padding-right: 0; }
+td.strong{ color: var(--fg); font-weight: 700; }
+td.r, th.r{ text-align: right; }
+
+/* ---------- cards ---------- */
+.cards{ display:grid; gap:11px; }
+.cards.c2{ grid-template-columns: 1fr 1fr; }
+.cards.c3{ grid-template-columns: repeat(3,1fr); }
+.cards > .span{ grid-column: 1 / -1; }
+
+.card{
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line-2);
+  padding: 12px 16px;
+  min-width: 0;
+}
+.card.crit{   border-left-color: var(--red); }
+.card.high{   border-left-color: var(--amber); }
+.card.ok{     border-left-color: var(--green); }
+.card.info{   border-left-color: var(--blue); }
+.card.accent{ border-left-color: var(--orange); }
+
+.card .top{ display:flex; align-items:baseline; justify-content:space-between; gap:14px; }
+.card .ref{
+  font-family:var(--mono); font-size:12px; font-weight:800;
+  letter-spacing:.08em; color:var(--orange);
+}
+.card .tag{
+  font-family:var(--mono); font-size:11.5px; font-weight:800;
+  letter-spacing:.08em; color:var(--blue);
+}
+.card .amt{
+  font-family:var(--mono); font-size:19px; font-weight:800; letter-spacing:-0.02em;
+  color:var(--fg); white-space:nowrap; font-variant-numeric: tabular-nums;
+}
+.card h4{ font-size:15px; font-weight:700; color:var(--fg); line-height:1.25; margin-top:5px; }
+.card p{ font-size:13px; font-weight:600; line-height:1.45; color:var(--fg-2); margin-top:5px; }
+.card .lbl{
+  display:block; font-family:var(--mono); font-size:10.5px; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--fg-3);
+}
+.card.kv .lbl{ margin-bottom:5px; }
+.card.kv p{ font-size:13.5px; font-weight:600; color:var(--fg-1); margin-top:0; }
+
+/* before / after pair */
+.card .was{ font-size:12.5px; font-weight:500; line-height:1.4; color:var(--fg-3); margin:0; }
+.card .now{ font-size:14px; font-weight:700; line-height:1.4; color:var(--fg); margin-top:6px; }
+
+/* dense variant, for slides stacking several cards in one column */
+.cards.compact{ gap: 9px; }
+.cards.compact .card{ padding: 10px 14px; }
+.cards.compact .card .tag{ font-size:11px; }
+.cards.compact .card h4{ font-size:14.5px; margin-top:3px; }
+.cards.compact .card p{ font-size:12.5px; line-height:1.42; margin-top:4px; }
+
+.card.total{ border-left-color: var(--orange); background: var(--bg-3); }
+.card.total .lbl{ color: var(--orange); font-size:11.5px; }
+
+/* ---------- cover ---------- */
+.cover{ padding: 22px 34px 14px; }
+.cover-top{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding-bottom: 12px; border-bottom: 2px solid var(--line-2);
+}
+.cover-word{
+  font-family: var(--sans); font-size: 78px; font-weight: 800;
+  letter-spacing: -0.04em; line-height: 1; color: var(--fg);
+}
+.cover-word em{ font-style: normal; color: var(--orange); }
+.cover-rule{
+  font-family: var(--sans); font-size: 23px; line-height:1.4; font-weight: 500;
+  color: var(--fg-2); max-width: 720px; margin-top: 20px;
+}
+.cover-rule strong{ color: var(--fg); font-weight: 800; }
+
+/* ---------- cover rule bar graphic ---------- */
+.rulebar{
+  display:flex; height: 46px; border:1px solid var(--line-2); margin-top: 6px;
+  background: var(--bg-2);
+}
+.rulebar .tested{
+  background: var(--blue); color: var(--on-blue);
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 800; letter-spacing:.02em;
+  flex: 0 0 8.5%;
+}
+.rulebar .untested{
+  flex:1; display:flex; align-items:center; padding-left: 16px;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 800; letter-spacing:.06em;
+  color: var(--orange);
+  background: repeating-linear-gradient(135deg, transparent 0 7px, rgba(255,138,61,.22) 7px 8px);
+}
+.rulebar-cap{
+  display:flex; justify-content:space-between; margin-top: 8px;
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing:.1em;
+  text-transform: uppercase; color: var(--fg-3);
+}
+
+/* ---------- two-up ---------- */
+.two{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.three{ display:grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.four{ display:grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+
+/* ---------- findings list ---------- */
+.consequence{ display:flex; gap: 13px; padding: 10px 0; border-bottom:1px solid var(--line); }
+.consequence:last-child{ border-bottom:none; }
+.consequence .idx{
+  font-family: var(--mono); font-size: 12px; font-weight: 800; color: var(--orange);
+  padding-top: 2px; flex: none; width: 28px; letter-spacing:.04em;
+}
+.consequence h4{ font-size: 15.5px; font-weight: 700; color: var(--fg); margin-bottom: 3px; }
+.consequence p{ font-size: 13.5px; font-weight: 600; line-height:1.48; color: var(--fg-2); }
+
+/* ---------- severity ---------- */
+.sev{
+  font-family: var(--mono); font-size: 11px; font-weight: 800;
+  letter-spacing:.1em; text-transform: uppercase; white-space:nowrap;
+}
+.sev.crit{ color: var(--red); }
+.sev.high{ color: var(--amber); }
+
+/* ---------- pipeline ---------- */
+.pipe{ display:grid; grid-template-columns: repeat(5,1fr); gap: 0; margin-top: 4px; }
+.stage{ padding: 0 18px 0 0; position: relative; }
+.stage:last-child{ padding-right:0; }
+.stage .code{
+  font-family: var(--mono); font-size: 11.5px; font-weight: 800; letter-spacing:.10em;
+  color: var(--orange); display:block; margin-bottom: 8px;
+}
+.stage .bar{ height: 4px; background: var(--blue); margin-bottom: 12px; }
+.stage.parallel .bar{ background: var(--orange); }
+.stage h4{ font-size: 15px; font-weight: 700; color: var(--fg); line-height:1.26; margin-bottom: 6px; }
+.stage p{ font-size: 13px; font-weight: 600; line-height:1.46; color: var(--fg-2); }
+
+/* ---------- verdict bar ---------- */
+.verdict{
+  border:1px solid var(--line-2); border-left: 4px solid var(--green);
+  background: var(--bg-2); padding: 12px 16px;
+  display:flex; gap: 12px; align-items:flex-start;
+}
+.verdict.red{ border-left-color: var(--orange); }
+.verdict p{ font-size: 13.5px; font-weight: 600; line-height:1.5; color: var(--fg-2); }
+.verdict strong{ color: var(--fg); font-weight: 700; }
+
+/* ---------- metric ---------- */
+.metric{ border-top: 3px solid var(--blue); padding-top: 12px; }
+.metric .fig{
+  font-family: var(--mono); font-size: 36px; font-weight: 800;
+  letter-spacing:-0.03em; color: var(--fg); line-height:1;
+}
+.metric .cap{
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing:.12em;
+  text-transform: uppercase; color: var(--orange); margin-top: 8px; display:block;
+}
+.metric p{ font-size: 13px; font-weight: 600; line-height:1.48; color: var(--fg-2); margin-top: 8px; }
+
+/* ---------- resolution path ---------- */
+.path{ display:flex; gap: 14px; padding: 12px 0; border-bottom:1px solid var(--line); }
+.path:last-child{ border-bottom:none; }
+.path .verb{
+  font-family: var(--mono); font-size: 11.5px; font-weight: 800; letter-spacing:.08em;
+  text-transform: uppercase; color: var(--on-accent); background: var(--orange);
+  padding: 4px 10px; flex:none; height: fit-content; margin-top: 1px;
+}
+.path p{ font-size: 14px; font-weight: 600; line-height:1.48; color: var(--fg-2); }
+.path strong{ color: var(--fg); font-weight: 700; }
+
+/* ---------- team ---------- */
+.role{ border-top: 3px solid var(--blue); padding-top: 11px; }
+.role h4{ font-size: 15.5px; font-weight: 700; color: var(--fg); line-height:1.24; }
+.role p{ font-size: 13px; font-weight: 600; line-height:1.48; color: var(--fg-2); margin-top: 7px; }
+
+/* ---------- print hint (screen only) ---------- */
+.hint{
+  max-width: 1280px; margin: 30px auto 0; padding: 16px 20px;
+  border:1px solid var(--line-2); background: var(--bg-2);
+  font-size: 13.5px; font-weight: 500; line-height:1.6; color: var(--fg-2);
+}
+.hint b{ color: var(--fg); }
+.hint .warn{ color: var(--orange); }
+.hint code{
+  font-family: var(--mono); font-size: 12px; background: var(--bg-3);
+  color: var(--orange-2); padding: 1px 6px;
+}
+
+/* ---------- overflow detector (screen only, never printed) ---------- */
+.ovf{
+  position: absolute; right: 12px; bottom: 12px; z-index: 20;
+  background: var(--red); color: #1A0503;
+  font-family: var(--mono); font-size: 12px; font-weight: 800; letter-spacing: .04em;
+  padding: 6px 11px; pointer-events: none;
+}
+
+/* ============================================================
+   PRINT — one slide per page, exact 16:9 PowerPoint geometry.
+   Sizes given in inches so no viewport unit can distort them.
+   ============================================================ */
+@page{ size: 13.333in 7.5in; margin: 0; }
+
+@media print{
+  html, body{ background:#05080F; padding:0; margin:0; }
+  .no-print{ display:none !important; }
+
+  .deck{ display:block; gap:0; }
+  .frame{
+    width: 13.333in !important; height: 7.5in !important;
+    page-break-after: always; break-after: page;
+    overflow: hidden;
+  }
+  .frame:last-child{ page-break-after: auto; break-after: auto; }
+
+  .slide{
+    width: 13.333in !important; height: 7.5in !important;
+    transform: none !important;
+    border: none;
+    box-shadow: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  *{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN TOOLBAR ============ -->
+<div class="bar no-print">
+  <div class="brand">
+    <span class="mark">Audita<em>AI</em></span>
+    <span class="sub">Zecathon 6.0 · Track 02 · Submission deck</span>
+    <span class="fitout" id="fit-out"></span>
+  </div>
+  <div class="tools">
+    <button class="btn" id="theme-btn" onclick="toggleTheme()">Light mode</button>
+    <button class="btn primary" onclick="window.print()">Save as PDF</button>
+  </div>
+</div>
+
+<div class="deck" id="deck">
+
+<!-- ==================== A-1 · COVER ==================== -->
+<div class="frame"><section class="slide cover">
+  <div class="s-body">
+  <div class="cover-top">
+    <span class="s-section">Zenith Bank Zecathon 6.0 · Track 02</span>
+    <span class="s-ref">Audit file A-1</span>
+  </div>
+
+  <div style="margin-top:46px;">
+    <h1 class="cover-word">Audita<em>AI</em></h1>
+    <p class="cover-rule">
+      <strong>Continuous transaction investigation and resolution.</strong>
+      Auditing every disbursement an enterprise makes — not the sample an
+      annual audit has time to test.
+    </p>
+  </div>
+
+  <div class="cards c2" style="margin-top:auto;">
+    <div class="card kv info">
+      <span class="lbl">Engagement</span>
+      <p>Autonomous multi-agent audit and reconciliation engine</p>
+    </div>
+    <div class="card kv info">
+      <span class="lbl">Scope</span>
+      <p>100% of disbursement transactions, investigated at settlement</p>
+    </div>
+    <div class="card kv info">
+      <span class="lbl">Evidence base</span>
+      <p>Scanned invoices and receipts · Purchase orders · Bank ledger debits</p>
+    </div>
+    <div class="card kv info">
+      <span class="lbl">Standard applied</span>
+      <p>ISA 240 (fraud) · ISA 230 (documentation) · ISA 500 (evidence) · FIRS WHT and VAT schedules</p>
+    </div>
+    <div class="card kv info span">
+      <span class="lbl">Prepared by</span>
+      <p>Team AuditaAI — four-member build team</p>
+    </div>
+  </div>
+  </div><!-- /.s-body -->
+
+  <div class="s-foot" style="margin-top:28px;">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>01 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== B-1 · PROBLEM ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">The Problem</span>
+    <span class="s-ref">B-1</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title">Audit tests a sample.<br>Fraud does not happen in the sample.</h2>
+
+    <div style="margin-top:26px;">
+      <div class="rulebar">
+        <div class="tested">5–10%</div>
+        <div class="untested">90–95% UNAUDITED</div>
+      </div>
+      <div class="rulebar-cap">
+        <span>Tested by sampling</span>
+        <span>Passes through unchecked</span>
+      </div>
+    </div>
+
+    <div class="two" style="margin-top:30px; align-items:start;">
+      <div>
+        <span class="kicker">Why the gap is wider in Nigeria</span>
+        <div class="consequence">
+          <span class="idx">i</span>
+          <div>
+            <h4>Documents arrive as pixels, not data</h4>
+            <p>Invoices, receipts and delivery notes reach finance as scans, phone photos and paper. Payments reach the bank as ledger rows. Nothing joins them automatically.</p>
+          </div>
+        </div>
+        <div class="consequence">
+          <span class="idx">ii</span>
+          <div>
+            <h4>Bank narrations are free text</h4>
+            <p>NIBSS narration strings carry no reliable vendor identifier, so matching a debit to the invoice behind it is manual work, every time.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <span class="kicker">What survives as a result</span>
+        <div class="consequence">
+          <span class="idx">iii</span>
+          <div>
+            <h4>Duplicate and ghost-vendor payments</h4>
+            <p>The same invoice resubmitted with a shifted date, or paid to a vendor that does not exist. Both clear because nobody checks the 90%.</p>
+          </div>
+        </div>
+        <div class="consequence">
+          <span class="idx">iv</span>
+          <div>
+            <h4>Amounts split below approval tiers</h4>
+            <p>Three invoices at ₦2.49m each avoid the ₦2.5m approval that one ₦7.47m invoice would have required.</p>
+          </div>
+        </div>
+        <div class="consequence">
+          <span class="idx">v</span>
+          <div>
+            <h4>Unapplied withholding tax</h4>
+            <p>WHT not deducted on professional fees becomes a FIRS liability with penalties attached, discovered years later.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="src" style="margin-top:auto; padding-top:16px;">
+      ISA 530 (Audit Sampling) requires a sample to be designed and selected; it sets no fixed percentage.
+      The 5–10% range shown is common practice, not a prescribed rate.
+    </p>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>02 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== B-2 · INNOVATION ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Innovation</span>
+    <span class="s-ref">B-2</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">Global audit AI assumes a world Nigerian finance does not run in.</h2>
+    <p class="s-lede">Every design decision in AuditaAI starts from the right-hand column.</p>
+
+    <div class="cards c2" style="margin-top:22px;">
+      <div class="card">
+        <p class="was">Invoices arrive as clean, structured electronic data</p>
+        <p class="now">Scanned paper, phone photographs, stamped delivery notes</p>
+      </div>
+      <div class="card">
+        <p class="was">Bank feeds are machine-readable and keyed to vendors</p>
+        <p class="now">Free-text NIBSS narrations with no vendor identifier</p>
+      </div>
+      <div class="card">
+        <p class="was">The vendor master can be trusted as a control</p>
+        <p class="now">Account details substituted on the invoice itself</p>
+      </div>
+      <div class="card">
+        <p class="was">Tax schedules follow US or EU rules</p>
+        <p class="now">FIRS WHT at 5% and 10%, VAT at 7.5%, with local exemptions</p>
+      </div>
+      <div class="card span">
+        <p class="was">A risk score is a sufficient output</p>
+        <p class="now">An auditor must sign — so every flag needs a citation, not a score</p>
+      </div>
+    </div>
+
+    <div class="verdict" style="margin-top:auto;">
+      <p><strong>The defensible position is not "we added AI to audit."</strong>
+      It is that a multimodal model reads Nigerian documents as they actually arrive, while every number an
+      auditor signs comes from deterministic code that can be re-run.</p>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>03 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== C-1 · SOLUTION ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">The Solution</span>
+    <span class="s-ref">C-1</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title">AuditaAI divides perception from arithmetic.</h2>
+    <p class="s-lede">A language model is excellent at reading a bad scan and unreliable at adding up. So it is only ever asked to do the first.</p>
+
+    <div class="two" style="margin-top:26px; align-items:start;">
+      <div class="panel">
+        <span class="kicker red">Perception — the model reads</span>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2);">
+          Gemini multimodal extraction turns scanned invoices, receipts and purchase orders into structured fields:
+          vendor name and TIN, invoice number and date, line items and quantities, bank account and tax details.
+        </p>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2); margin-top:12px;">
+          Output is constrained to a strict schema. A malformed read fails loudly rather than corrupting a reconciliation downstream.
+        </p>
+      </div>
+
+      <div class="panel" style="border-left:3px solid var(--green);">
+        <span class="kicker green">Arithmetic — the engine counts</span>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2);">
+          A deterministic Python engine performs three-way matching across purchase order, invoice and bank debit
+          using decimal arithmetic — totals, tolerances, tax rates, quantity reconciliation.
+        </p>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2); margin-top:12px;">
+          The model never performs a calculation. Every figure is reproducible by re-running the same code on the same evidence.
+        </p>
+      </div>
+    </div>
+
+    <div class="three" style="margin-top:auto;">
+      <div class="metric">
+        <span class="fig">100%</span>
+        <span class="cap">Coverage</span>
+        <p>Every transaction investigated, not a sample of them.</p>
+      </div>
+      <div class="metric">
+        <span class="fig">Cited</span>
+        <span class="cap">Every finding</span>
+        <p>Each exception opens the source document and the rule breached, side by side.</p>
+      </div>
+      <div class="metric">
+        <span class="fig">ISA 230</span>
+        <span class="cap">Output format</span>
+        <p>A workpaper an auditor can review, adjust and sign.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>04 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== C-2 · ARCHITECTURE ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">How It Works</span>
+    <span class="s-ref">C-2</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">Five stages, one unbroken evidence chain.</h2>
+    <p class="s-lede">Sources enter at the left. Nothing reaches the workpaper without a citation back to the document it came from.</p>
+
+    <div class="pipe" style="margin-top:34px;">
+      <div class="stage">
+        <span class="code">A-1</span>
+        <div class="bar"></div>
+        <h4>Ingestion</h4>
+        <p>Scanned invoices, purchase orders and bank ledger exports enter as files. No ERP integration required to start.</p>
+      </div>
+      <div class="stage">
+        <span class="code">A-2</span>
+        <div class="bar"></div>
+        <h4>Extraction</h4>
+        <p>Multimodal model reads each document into structured fields under a strict schema.</p>
+      </div>
+      <div class="stage">
+        <span class="code">A-3</span>
+        <div class="bar"></div>
+        <h4>Three-way match</h4>
+        <p>Deterministic engine ties purchase order, invoice and bank debit together on amount, date and vendor.</p>
+      </div>
+      <div class="stage parallel">
+        <span class="code">A-4</span>
+        <div class="bar"></div>
+        <h4>Forensic tests</h4>
+        <p>Rule engine runs duplicate, threshold-splitting, vendor-integrity and tax tests in parallel.</p>
+      </div>
+      <div class="stage parallel">
+        <span class="code">A-5</span>
+        <div class="bar"></div>
+        <h4>Synthesis</h4>
+        <p>Findings are scored, ordered by exposure, and drafted into the workpaper.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:38px; border-top:1.5px solid var(--ink); padding-top:20px;">
+      <div class="two" style="align-items:start;">
+        <div>
+          <span class="kicker">Safety rail</span>
+          <p style="font-size:13px; line-height:1.6; color:var(--ink-2);">
+            The model is restricted to perception and reasoning. All matching, reconciliation, tax rates and
+            thresholds run in decimal-precision Python — an architectural boundary, not a prompt instruction.
+            The language model has no path to a number the auditor signs.
+          </p>
+        </div>
+        <div>
+          <span class="kicker">Stack</span>
+          <p class="mono" style="font-size:12px; line-height:1.9; color:var(--ink-2);">
+            Gemini multimodal API · Python<br>
+            FastAPI · SQLAlchemy · PostgreSQL<br>
+            Next.js (React) · Tailwind · Recharts<br>
+            ISA 240 / ISA 230 / ISA 500 · FIRS WHT &amp; VAT
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>05 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== D-1 · INVESTIGATION ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Investigation</span>
+    <span class="s-ref">D-1</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">Five exceptions in a sixty-transaction test file.</h2>
+    <p class="s-lede">The seeded cases the build is validated against. Each is written as a failing test before its detector exists.</p>
+
+    <div class="cards c2" style="margin-top:16px;">
+      <div class="card crit">
+        <div class="top"><span class="ref">F-01 · <span class="sev crit">Critical</span></span><span class="amt">₦4,850,000</span></div>
+        <h4>Invoice resubmitted with date shifted three days</h4>
+        <p>Duplicate voucher test — fuzzy match on vendor, amount and near-date window</p>
+      </div>
+      <div class="card crit">
+        <div class="top"><span class="ref">F-02 · <span class="sev crit">Critical</span></span><span class="amt">₦7,470,000</span></div>
+        <h4>Three invoices at ₦2.49m against a ₦2.5m approval tier</h4>
+        <p>Threshold-splitting test — clustering immediately below an authorisation limit</p>
+      </div>
+      <div class="card crit">
+        <div class="top"><span class="ref">F-03 · <span class="sev crit">Critical</span></span><span class="amt">₦12,300,000</span></div>
+        <h4>Invoice bank account differs from vendor master account</h4>
+        <p>Vendor integrity test — payment destination against approved master record</p>
+      </div>
+      <div class="card high">
+        <div class="top"><span class="ref">F-04 · <span class="sev high">High</span></span><span class="amt">₦1,180,000</span></div>
+        <h4>No withholding tax deducted on professional fees</h4>
+        <p>FIRS WHT schedule — 10% on professional services rendered by a company</p>
+      </div>
+      <div class="card high">
+        <div class="top"><span class="ref">F-05 · <span class="sev high">High</span></span><span class="amt">₦3,600,000</span></div>
+        <h4>Weekend submission with no matching purchase order</h4>
+        <p>Three-way match exception — no approved order behind the payment</p>
+      </div>
+      <div class="card total span">
+        <div class="top">
+          <span class="lbl">Total exposure · 5 of 60 transactions</span>
+          <span class="amt" style="color:var(--orange); font-size:22px;">₦29,400,000</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict red" style="margin-top:auto;">
+      <p><strong>Feasibility is the claim here, not ambition.</strong>
+      These five patterns are seeded and asserted against by name. Demo-day success means all five fire with the
+      correct citation — and false positives on the other 55 transactions stay at zero.</p>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>06 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== D-2 · RESOLUTION ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Resolution</span>
+    <span class="s-ref">D-2</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">A flag is not a finding until somebody resolves it.</h2>
+    <p class="s-lede">Investigation is half the track name. This is the other half — what happens in the minutes after the engine raises an exception.</p>
+
+    <div class="two" style="margin-top:24px; align-items:start;">
+      <div>
+        <div class="path">
+          <span class="verb">Query</span>
+          <p><strong>Drafts the question.</strong> The exception is packaged with its evidence — the invoice page, the ledger debit, the rule breached — and sent to the initiator for response.</p>
+        </div>
+        <div class="path">
+          <span class="verb">Hold</span>
+          <p><strong>Recommends suspension before settlement.</strong> On critical findings the engine raises a payment hold for an authorised officer to apply, rather than reporting the loss after the money has left.</p>
+        </div>
+      </div>
+      <div>
+        <div class="path">
+          <span class="verb">Recover</span>
+          <p><strong>Logs the recovery.</strong> Duplicate and overpayment findings create a tracked recovery entry that stays open until the funds are returned or written off with justification.</p>
+        </div>
+        <div class="path">
+          <span class="verb">Escalate</span>
+          <p><strong>Routes by severity.</strong> Each finding carries an owner, a due date and an audit trail of who saw it, what they decided and when.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict" style="margin-top:auto;">
+      <p><strong>Every resolution writes back into the workpaper.</strong>
+      What reaches the auditor is not a list of alerts but a record of what was found, what was decided and what
+      evidence supported it. That closed loop is what makes the output signable.</p>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>07 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== E-1 · TRUST ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Trust &amp; Data Protection</span>
+    <span class="s-ref">E-1</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">Built so that an auditor can sign it, and a bank can host it.</h2>
+
+    <div class="two" style="margin-top:24px; align-items:start;">
+      <div>
+        <span class="kicker red">Explainability — no black box</span>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2);">
+          An auditor cannot sign off on a model's opinion. Every exception opens the original invoice page beside
+          the ledger debit, with the discrepancy highlighted and the rule named.
+        </p>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2); margin-top:12px;">
+          Findings are reproducible: the same evidence re-run produces the same result, because the arithmetic is
+          code rather than inference.
+        </p>
+      </div>
+
+      <div>
+        <span class="kicker green">Data protection — the default question</span>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2);">
+          Account numbers, personnel names and other direct identifiers are pseudonymised <em>before</em> any inference call.
+          Model endpoints are used under zero-retention terms.
+        </p>
+        <p style="font-size:13px; line-height:1.6; color:var(--ink-2); margin-top:12px;">
+          The system is containerised and deployable inside the bank's own environment, aligned to the Nigeria Data
+          Protection Act 2023. Client data need not leave the perimeter for the product to work.
+        </p>
+      </div>
+    </div>
+
+    <div class="verdict" style="margin-top:auto;">
+      <p><strong>Zero-math-hallucination guarantee.</strong>
+      Language models read documents. Python counts money. The two are separated by an architectural boundary,
+      which is why the figures in the workpaper can be defended line by line.</p>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>08 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== E-2 · TARGET USERS ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Target Users</span>
+    <span class="s-ref">E-2</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">Who uses it, and who pays for it.</h2>
+    <p class="s-lede">The buyer and the daily user are different people. Both have to be served or the tool is abandoned.</p>
+
+    <div class="three" style="margin-top:28px; align-items:start;">
+      <div class="role">
+        <span class="kicker red" style="margin-bottom:7px;">Primary user</span>
+        <h4>Internal audit and inspection divisions</h4>
+        <p>Bank inspection teams and enterprise internal audit functions. They test a sample by hand and carry the professional risk for what it missed.</p>
+      </div>
+      <div class="role">
+        <span class="kicker red" style="margin-bottom:7px;">Primary user</span>
+        <h4>Finance controllers and CFO offices</h4>
+        <p>Own the disbursement process. They need leakage found before settlement, not an annual report describing what already left the account.</p>
+      </div>
+      <div class="role">
+        <span class="kicker red" style="margin-bottom:7px;">Economic buyer</span>
+        <h4>Corporate and commercial banking risk</h4>
+        <p>Zenith's credit teams carry the downside when a corporate client's internal leakage becomes an NPL. They have budget and a direct interest.</p>
+      </div>
+    </div>
+
+    <div class="two" style="margin-top:30px; align-items:start;">
+      <div>
+        <span class="kicker">Channel — external audit firms</span>
+        <p style="font-size:12.5px; line-height:1.6; color:var(--ink-2);">
+          Nigerian audit practices run the same manual reconciliation on every engagement. Selling to firms
+          multiplies reach without multiplying sales effort, and firms already hold the client relationships
+          and the obligation to test more than a sample.
+        </p>
+      </div>
+      <div>
+        <span class="kicker">Where it starts</span>
+        <p style="font-size:12.5px; line-height:1.6; color:var(--ink-2);">
+          A single-entity deployment inside one internal audit function, on historical transactions first.
+          Results are compared against findings the team already knows before anything touches live payments —
+          the cheapest way to earn trust in the output.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>09 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== F-1 · IMPACT & SCALE ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Impact &amp; Scalability</span>
+    <span class="s-ref">F-1</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">What changes, and how it reaches more than one balance sheet.</h2>
+
+    <div class="three" style="margin-top:26px; align-items:start;">
+      <div class="metric">
+        <span class="fig">Sample →<br>all</span>
+        <span class="cap">Coverage</span>
+        <p>Testing stops being a budgeting decision. Every disbursement is investigated because investigation is now near-free.</p>
+      </div>
+      <div class="metric">
+        <span class="fig">Weeks →<br>minutes</span>
+        <span class="cap">Cycle time, design target</span>
+        <p>Reconciling a month of disbursements becomes a run rather than a project. The constraint moves from effort to review.</p>
+      </div>
+      <div class="metric">
+        <span class="fig">Before<br>settlement</span>
+        <span class="cap">Point of detection</span>
+        <p>Leakage is caught while a payment can still be held, not eighteen months later in a report nobody can act on.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:30px;">
+      <span class="kicker red">Why this is a financial-inclusion argument, not only an efficiency one</span>
+      <p style="font-size:13px; line-height:1.65; color:var(--ink-2);">
+        Capital that leaks out of a corporate borrower cannot service a loan. Leakage and weak control drive
+        non-performing loans, and NPL pressure is what makes a bank tighten credit downmarket — exactly where
+        SMEs get priced out. The same forensic tests that find a ghost vendor in an enterprise ledger are what
+        make an SME's cash flow auditable enough to lend against.
+      </p>
+    </div>
+
+    <div style="margin-top:auto; border-top:1.5px solid var(--ink); padding-top:18px;">
+      <span class="kicker">Three deployment shapes, one engine</span>
+      <div class="three" style="margin-top:4px;">
+        <div>
+          <p class="mono" style="font-size:12px; font-weight:700; color:var(--orange); letter-spacing:.1em;">01 — SINGLE ENTITY</p>
+          <p style="font-size:12px; line-height:1.55; color:var(--ink-2); margin-top:6px;">One enterprise, its own documents and ledger. The pilot shape.</p>
+        </div>
+        <div>
+          <p class="mono" style="font-size:12px; font-weight:700; color:var(--orange); letter-spacing:.1em;">02 — BANK-HOSTED</p>
+          <p style="font-size:12px; line-height:1.55; color:var(--ink-2); margin-top:6px;">Zenith runs it for corporate clients as a value-added service. Sticky deposits, differentiated offering.</p>
+        </div>
+        <div>
+          <p class="mono" style="font-size:12px; font-weight:700; color:var(--orange); letter-spacing:.1em;">03 — AUDIT FIRMS</p>
+          <p style="font-size:12px; line-height:1.55; color:var(--ink-2); margin-top:6px;">Multi-client tenancy for practices, multiplying reach without multiplying sales effort.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>10 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== G-1 · IMPLEMENTATION ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Implementation Approach</span>
+    <span class="s-ref">G-1</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">How it gets built, and how it lands inside a bank.</h2>
+
+    <div class="two" style="margin-top:14px; align-items:start; gap:34px;">
+      <div>
+        <span class="kicker">Build phases</span>
+        <div class="cards compact" style="margin-top:2px;">
+          <div class="card info">
+            <div class="top"><span class="tag">Oct 14–19</span></div>
+            <h4>Pre-sprint</h4>
+            <p>Test file of 60 transactions with the five exceptions seeded, repository, FastAPI and Next.js scaffolding, rule definitions.</p>
+          </div>
+          <div class="card info">
+            <div class="top"><span class="tag">Oct 20–22</span></div>
+            <h4>Live hackathon</h4>
+            <p>Extraction pipeline, matching engine, rule engine, auditor workbench. Success condition: all five cases fire with correct citations.</p>
+          </div>
+          <div class="card info">
+            <div class="top"><span class="tag">Oct 23–28</span></div>
+            <h4>Pitch and polish</h4>
+            <p>Dry runs, recorded backup demo, final materials.</p>
+          </div>
+          <div class="card info">
+            <div class="top"><span class="tag">Post-event</span></div>
+            <h4>Pilot</h4>
+            <p>One internal audit function, historical data first, results compared against findings the team already knows.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <span class="kicker">Integration points, least demanding first</span>
+        <div class="cards compact" style="margin-top:2px;">
+          <div class="card ok">
+            <div class="top"><span class="tag">Step 1</span></div>
+            <h4>Statement and ledger export</h4>
+            <p>CSV, Excel and scanned files. No core-banking integration, no IT change request, no procurement cycle — this is how the pilot starts.</p>
+          </div>
+          <div class="card ok">
+            <div class="top"><span class="tag">Step 2</span></div>
+            <h4>ERP connector</h4>
+            <p>Read-only pull of purchase orders and vendor master, removing the manual export.</p>
+          </div>
+          <div class="card ok">
+            <div class="top"><span class="tag">Step 3</span></div>
+            <h4>Core banking feed</h4>
+            <p>Streaming transactions, so investigation runs at settlement — where a hold becomes possible instead of a post-mortem.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict" style="margin-top:auto;">
+      <p><strong>Method: test-first on the fraud cases.</strong>
+      Each exception pattern is written as a failing test before its detector exists, so progress is measured by
+      tests turning green rather than features appearing. The same container runs in a laptop demo, a bank VPC
+      and a cloud instance.</p>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>AuditaAI · Zecathon 6.0 · Track 02</span>
+    <span>11 / 12</span>
+  </div>
+</section></div>
+
+<!-- ==================== G-2 · TEAM & CLOSE ==================== -->
+<div class="frame"><section class="slide">
+  <div class="s-head">
+    <span class="s-section">Team</span>
+    <span class="s-ref">G-2</span>
+  </div>
+
+  <div class="s-body">
+    <h2 class="s-title narrow">Four people, four disciplines, one demo.</h2>
+
+    <div class="four" style="margin-top:26px; align-items:start;">
+      <div class="role">
+        <h4>AI &amp; Agentic Lead</h4>
+        <p>Multimodal extraction schema, agent orchestration, prompt evaluation and the zero-hallucination guardrails.</p>
+      </div>
+      <div class="role">
+        <h4>Backend &amp; Forensic Systems</h4>
+        <p>FastAPI service, deterministic three-way matching, rule engine, test file and database architecture.</p>
+      </div>
+      <div class="role">
+        <h4>Frontend &amp; Product UI</h4>
+        <p>Auditor workbench, exception queue, side-by-side evidence viewer and the risk dashboards.</p>
+      </div>
+      <div class="role">
+        <h4>Compliance &amp; Pitch</h4>
+        <p>FIRS and ISA rule accuracy, synthetic dataset curation, regulatory framing and presentation.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;">
+      <div style="border-top:3px solid var(--blue); padding-top:20px;">
+        <p style="font-family:var(--sans); font-size:22px; font-weight:700; line-height:1.42; letter-spacing:-0.015em; color:var(--fg); max-width:940px;">
+          Auditing has always worked by sampling because checking everything was impossible.
+          It is not impossible any more — and the moment it stops being impossible,
+          a 5% sample stops being defensible.
+        </p>
+        <p style="font-family:var(--mono); font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--orange); margin-top:20px;">
+          AuditaAI · Track 02 — AI-Powered Transaction Investigation and Resolution
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="s-foot">
+    <span>Team AuditaAI · Zecathon 6.0</span>
+    <span>12 / 12</span>
+  </div>
+</section></div>
+
+</div><!-- /deck -->
+
+<!-- ============ PRINT GUIDANCE (screen only) ============ -->
+<div class="hint no-print">
+  <b>Text size is computed, not fixed.</b> Each slide measures its own content and takes the largest size at
+  which it still fits the 1280×720 frame — so nothing spills and nothing is left half-empty. The toolbar
+  readout shows what it settled on: <code>deck ×1.34</code> means the whole deck is running at 1.34× the base
+  type size, and the per-slide numbers show where individual slides landed. Reopen the file after any edit and
+  it re-fits itself.
+  <br><br>
+  <span class="warn">If a red <b>OVERFLOW</b> chip appears on a slide</span>, that slide's content is longer
+  than the frame can hold even at the smallest size. The fix is to cut words on that slide, not to shrink the
+  type — the chip sits in the corner and never prints.
+  <br><br>
+  <b class="warn">First: turn off "Headers and footers".</b>
+  Chrome prints the date, time, page number and file path into the page margin by default. No CSS can remove
+  them — it is a checkbox in the print dialog, not something the page controls. Open <b>More settings</b>
+  and untick <b>Headers and footers</b> before saving.
+  <br><br>
+  <b>Then set:</b> <code>Destination: Save as PDF</code> · <code>Layout: Landscape</code> ·
+  <code>Paper size: 13.33 × 7.5 in</code> (choose <i>Custom</i> if it is not listed) ·
+  <code>Margins: None</code> · tick <b>Background graphics</b>.
+  Each of the 12 slides becomes exactly one page.
+  <br><br>
+  <b>Before submitting:</b> open the PDF and confirm the pages are wide, not tall, and that no date, URL or
+  file path appears in the corners or along the bottom edge. If they come out portrait, the paper size in
+  the dialog did not take — set it manually.
+</div>
+
+<script>
+/* ---- light mode: printable fallback if the browser strips background graphics ---- */
+const LIGHT = {
+  '--bg':'#FBFAF7',   '--bg-2':'#F4F2EC',   '--bg-3':'#EAE7DE',
+  '--line':'#DAD5C8', '--line-2':'#BEB7A5',
+  '--fg':'#12100C',   '--fg-1':'#12100C',   '--fg-2':'#3E3830',  '--fg-3':'#6B6357',
+  '--orange':'#C2410C', '--orange-2':'#9A3412',
+  '--blue':'#1D4ED8',   '--blue-2':'#1E40AF',
+  '--green':'#15803D',  '--amber':'#92670A',
+  '--on-accent':'#FFFFFF', '--on-blue':'#FFFFFF'
+};
+let light = false;
+function toggleTheme(){
+  light = !light;
+  const r = document.documentElement.style;
+  const btn = document.getElementById('theme-btn');
+  if (light){
+    Object.entries(LIGHT).forEach(([k,v]) => r.setProperty(k, v));
+    document.body.style.background = '#E7E2D6';
+    btn.textContent = 'Dark mode';
+  } else {
+    Object.keys(LIGHT).forEach(k => r.removeProperty(k));
+    document.body.style.background = '#05080F';
+    btn.textContent = 'Light mode';
+  }
+}
+
+/* ---- scale the fixed 1280x720 slides to fit the viewport ---- */
+function fitDeck(){
+  const avail = window.innerWidth - 48;
+  const s = Math.min(1, avail / 1280);
+  document.documentElement.style.setProperty('--s', s);
+}
+fitDeck();
+window.addEventListener('resize', fitDeck);
+window.addEventListener('beforeprint', () => {
+  document.documentElement.style.setProperty('--s', 1);
+  fitSlides();          /* re-fit against the true 1280x720 frame */
+});
+window.addEventListener('afterprint', () => { fitDeck(); queueFit(); });
+
+/* ---- arrow-key scrolling from slide to slide ---- */
+document.addEventListener('keydown', e => {
+  const frames = [...document.querySelectorAll('.frame')];
+  if (!frames.length) return;
+  const y = window.scrollY;
+  const next = frames.find(f => f.offsetTop > y + 12);
+  const prev = [...frames].reverse().find(f => f.offsetTop < y - 12);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){
+    if (next){ e.preventDefault(); window.scrollTo({ top: next.offsetTop - 20, behavior:'smooth' }); }
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp'){
+    if (prev){ e.preventDefault(); window.scrollTo({ top: prev.offsetTop - 20, behavior:'smooth' }); }
+  }
+});
+
+/* ============================================================
+   AUTO-FIT
+   ------------------------------------------------------------
+   The slide is a fixed 1280x720 frame. Rather than hard-coding a
+   type size and hoping it fits, every slide measures itself and
+   takes the largest multiplier (--k) at which its content still
+   fits. Zoom scales type, padding, gaps and rule weights together,
+   so a slide ends up filled edge to edge and never spills.
+
+   The deck-wide size is the MINIMUM across all twelve slides, so
+   the typography stays consistent; each slide is then allowed a
+   little more to close whatever gap it has left over. No slide is
+   ever hand-tuned -- change the prose and the sizes follow.
+   ============================================================ */
+const K_MIN  = 0.62;   /* floor   — below this a slide is over-stuffed */
+const K_MAX  = 2.40;   /* ceiling — cover and closing slides run large */
+const K_GROW = 1.45;   /* how far past the deck minimum a slide may go */
+
+const bodyOf = slide => slide.querySelector('.s-body');
+const setK   = (slide, k) => slide.style.setProperty('--k', k);
+
+function fits(slide){
+  const b = bodyOf(slide);
+  return !b || b.scrollHeight - b.clientHeight <= 1;
+}
+
+/* largest --k at which this slide still fits its frame */
+function ceilingFor(slide){
+  setK(slide, K_MIN);
+  if (!fits(slide)) return K_MIN;          /* over-stuffed even at the floor */
+  let lo = K_MIN, hi = K_MAX, best = K_MIN;
+  for (let i = 0; i < 15; i++){
+    const mid = (lo + hi) / 2;
+    setK(slide, mid);
+    if (fits(slide)) { best = mid; lo = mid; } else { hi = mid; }
+  }
+  return best;
+}
+
+function fitSlides(){
+  const slides = [...document.querySelectorAll('.slide')].filter(bodyOf);
+  if (!slides.length) return;
+
+  const ceilings = slides.map(ceilingFor);
+  const deckK = Math.min(...ceilings);
+
+  slides.forEach((slide, i) => {
+    let k = Math.min(ceilings[i], deckK * K_GROW);
+    setK(slide, k);
+    while (!fits(slide) && k > K_MIN){ k -= 0.02; setK(slide, k); }
+    slide.dataset.k = k.toFixed(2);
+  });
+
+  checkOverflow();
+  reportFit(slides, deckK);
+}
+
+/* on-screen readout: what each slide settled on, and the deck minimum */
+function reportFit(slides, deckK){
+  const out = document.getElementById('fit-out');
+  if (!out) return;
+  out.textContent = 'deck ×' + deckK.toFixed(2) + '  ·  per slide '
+    + slides.map((s, i) => (i + 1) + ':' + s.dataset.k).join(' ');
+}
+
+/* ---- overflow check ----
+   Backstop. If a chip appears the fitter could not save the slide,
+   which means content has grown past what the frame can hold even
+   at the floor. Visible on screen instead of silently clipped. */
+function checkOverflow(){
+  document.querySelectorAll('.slide').forEach((slide, i) => {
+    const body = bodyOf(slide);
+    if (!body) return;
+    const over = body.scrollHeight - body.clientHeight;
+    let tag = slide.querySelector('.ovf');
+    if (over > 1){
+      if (!tag){ tag = document.createElement('div'); tag.className = 'ovf no-print'; slide.appendChild(tag); }
+      tag.textContent = 'OVERFLOW +' + over + 'px · slide ' + (i + 1);
+    } else if (tag){
+      tag.remove();
+    }
+  });
+}
+
+/* ---- run the fitter ----
+   Metrics change once the webfonts swap in, so the fit runs again
+   on fonts.ready. beforeprint pins the scale so the PDF is measured
+   against the real 1280x720 frame rather than the zoomed screen one. */
+let fitQueued = false;
+function queueFit(){
+  if (fitQueued) return;
+  fitQueued = true;
+  requestAnimationFrame(() => { fitQueued = false; fitSlides(); });
+}
+
+fitSlides();
+window.addEventListener('load', queueFit);
+window.addEventListener('resize', queueFit);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(queueFit);
+
+</script>
+</body>
+</html>
